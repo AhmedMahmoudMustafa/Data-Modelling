@@ -1,48 +1,75 @@
 # Dimensional Data Modeling - Actor Films
 
-This repository demonstrates dimensional data modeling techniques using a dataset of actors and films. The goal is to transform the data into a format that is suitable for efficient analysis, particularly tracking changes in actor attributes over time.
+## Overview
 
-## Dataset Overview
+This project demonstrates the application of dimensional data modeling techniques to analyze actor career data. The primary goal is to transform raw data into a structured format that facilitates efficient analysis of actor performance, career trends, and historical changes in actor attributes.
 
-The `actor_films` dataset contains information about actors, films, and their associated ratings. It includes the following fields:
+This project addresses the challenges of tracking actor performance over time and provides a robust foundation for data-driven decision-making in the entertainment industry.
 
-- `actor`: The name of the actor.
-- `actorid`: A unique identifier for each actor.
-- `film`: The name of the film.
-- `year`: The year the film was released.
-- `votes`: The number of votes the film received.
-- `rating`: The rating of the film.
-- `filmid`: A unique identifier for each film.
+## Key Concepts Demonstrated
 
-## Data Modeling Approach
+* **SQL Development:** Creating and executing SQL queries for data transformation, aggregation, and retrieval.
+* **Type 2 Slowly Changing Dimension (SCD):** Implementing SCD Type 2 to track historical changes in actor attributes (quality class and activity status).
+* **Recursive Common Table Expressions (CTEs):** Utilizing recursive CTEs for efficient data processing and cumulative table generation.
+* **Data Analysis Enablement:** Structuring data to support analysis of actor performance, career trends, and historical changes.
 
-The project employs the following steps:
+## Dataset
 
-1. **`actors` Table:**
-   - Creates an `actors` table to store the current state of each actor, including their films, quality class (based on average movie rating), and activity status.
-   - Utilizes a recursive CTE to populate this table incrementally, year by year.
+The project utilizes a dataset containing information about actors, films, and their associated attributes. The dataset includes the following fields:
 
-2. **`actors_history_scd` Table:**
-   - Implements a Type 2 Slowly Changing Dimension (SCD) table to track historical changes in `quality_class` and `is_active` status for each actor.
-   - Includes `start_date` and `end_date` fields to capture the time periods for each status.
+* `actor`: The name of the actor.
+* `actorid`: A unique identifier for each actor.
+* `film`: The name of the film.
+* `year`: The year the film was released.
+* `votes`: The number of votes the film received.
+* `rating`: The rating of the film.
+* `filmid`: A unique identifier for each film.
 
-3. **Backfill and Incremental Queries:**
-   - Provides a backfill query to populate the `actors_history_scd` table with historical data.
-   - Offers an incremental query to update the SCD table with new data from the `actors` table, ensuring efficient updates.
+## Data Model
+
+The project involves the creation of two key tables:
+
+1.  **`actor` Table:**
+    * This table stores the current state of each actor, including:
+        * `films`: An array of film information (film name, votes, rating, film ID).
+        * `quality_class`: An actor's performance quality category (star, good, average, bad), determined by the average rating of their movies in the most recent year.
+        * `is_active`: A boolean indicating whether the actor is currently active.
+    * This table is populated using a recursive CTE to process data year by year.
+
+2.  **`actors_history_scd` Table:**
+    * This table implements Type 2 Slowly Changing Dimension (SCD) to track historical changes in actor attributes over time.
+    * It includes the following fields:
+        * `actor_id`, `actor`: Actor identification.
+        * `quality_class`: Actor's performance quality category.
+        * `is_active`: Actor's activity status.
+        * `start_date`, `end_date`: Date range for which the record is valid.
+    * This table is populated using a backfill query and can be updated incrementally using an incremental query.
 
 ## Queries
 
 The `assignment_queries.sql` file contains the following SQL queries:
 
-1. **DDL for `actors` table:** Creates the `actors` table with appropriate data types and primary key.
-2. **Cumulative table generation query:** Populates the `actors` table year by year using a recursive CTE.
-3. **DDL for `actors_history_scd` table:** Defines the structure of the SCD table.
-4. **Backfill query for `actors_history_scd`:** Populates the SCD table with historical data.
-5. **Incremental query for `actors_history_scd`:** Updates the SCD table with new data while maintaining history.
+1.  **DDL for `actor` table:**
+    * Creates the `actor` table and defines the custom `films` type and `quality_class` enum.
 
-## How to Use
+2.  **Cumulative table generation query:**
+    * Uses a recursive CTE to populate the `actor` table with data, processing the data year by year.
 
-1. **Create a database:** Create a new database in your SQL environment.
-2. **Create the `actor_films` table:** Create a table named `actor_films` with the structure described in "Dataset Overview."
-3. **Populate the `actor_films` table:** Load your data into the `actor_films` table.
-4. **Run the queries:** Execute the queries in the `assignment_queries.sql` file in the specified order.
+3.  **DDL for `actors_history_scd` table:**
+    * Defines the table structure for the SCD Type 2 implementation.
+
+4.  **Backfill query for `actors_history_scd`:**
+    * Populates the `actors_history_scd` table with historical data from the `actor` table.
+
+5.  **Incremental query for `actors_history_scd`:**
+    * Updates the `actors_history_scd` table with new data from the `actor` table, maintaining historical records.
+
+## Business Impact
+
+This project demonstrates how data modeling can be used to provide valuable insights for businesses in the entertainment industry.
+
+* **Improved Decision-Making:** The `actor_history_scd` table enables analysis of actor performance trends and historical activity, supporting data-driven decisions in casting, project selection, and talent management.
+* **Enhanced Data Understanding:** The dimensional model provides a clear and structured view of actor career data, facilitating a deeper understanding of actor-film relationships and career trajectories.
+* **Increased Efficiency:** The optimized queries and data model reduce the time and resources required for data analysis, enabling stakeholders to focus on strategic initiatives.
+* **Data-Driven Storytelling:** The structured data enables the creation of compelling narratives about actor careers and film industry trends, supporting effective communication with stakeholders.
+* **Scalability and Maintainability:** The dimensional data model and SCD Type 2 implementation are designed to accommodate growing datasets and evolving business requirements, ensuring long-term value.
